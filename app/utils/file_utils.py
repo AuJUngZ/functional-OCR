@@ -1,18 +1,27 @@
 import os
 from werkzeug.utils import secure_filename
+from pymonad.either import Either, Right, Left
 
-def save_image(file, upload_folder='./uploads') -> str:
+def save_image_either(file, upload_folder='./uploads') -> Either:
     """
-    Save the uploaded file to the upload folder.
+    Save the uploaded file to the upload folder, returning an Either.
     """
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(upload_folder, filename)
-    file.save(filepath)
-    return filepath
+    try:
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(upload_folder, filename)
+        
+        file.save(filepath)
+        return Right(filepath)
+    except Exception as e:
+        return Left(f"Error saving file: {str(e)}")
 
-def cleanup_file(filepath: str) -> None:
+def cleanup_file_either(filepath: str):
     """
-    Delete the temporary file.
+    Delete the temporary file, returning an Either.
     """
-    if os.path.exists(filepath):
-        os.remove(filepath)
+    try:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        return Right(f'File {filepath} deleted')
+    except Exception as e:
+        return Left(f"Error cleaning up file: {str(e)}")

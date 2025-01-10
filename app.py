@@ -1,8 +1,8 @@
 from app import create_app
-import os
+from app.utils.folder_utils import folder_init
 
 app = create_app()
 
 if __name__ == '__main__':
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    folder_init()
     app.run(debug=True)

@@ -1,22 +1,33 @@
-from app.utils.file_utils import save_image, cleanup_file
+from app.utils.file_utils import cleanup_file_either, save_image_either
 import pytesseract
 from PIL import Image
+from pymonad.either import Either, Left, Right
 
-def perform_ocr(image_path: str) -> str:
+def perform_ocr_either(image_path: str) -> Either:
     """
-    Perform OCR on the given image and return extracted text.
+    Perform OCR on the given image and return the cleaned text wrapped in an Either.
+    The returned text is sanitized and formatted for display in an HTML tag.
     """
-    image = Image.open(image_path)
-    text = pytesseract.image_to_string(image)
-    return text
-
-def process_image(file) -> str:
-    """
-    Process the uploaded image, perform OCR, and cleanup.
-    """
-    image_path = save_image(file)
     try:
-        text = perform_ocr(image_path)
-        return text
-    finally:
-        cleanup_file(image_path)
+        image = Image.open(image_path)
+        text = pytesseract.image_to_string(image, lang='tha+eng', config='--psm 6')
+        
+        return Right(text)
+    except Exception as e:
+        return Left(f"Error performing OCR: {str(e)}")
+
+
+def process_image(file) -> Either:
+    """
+    Process the uploaded image, perform OCR, and cleanup using Either.
+    """
+    def ocr_and_cleanup(image_path: str) -> Either:
+        ocr_result = perform_ocr_either(image_path)
+        cleanup_file_either(image_path)
+        
+        if ocr_result.is_right():
+            return ocr_result
+        else :
+            return Left(f"Error performing OCR: {ocr_result.value}")
+
+    return save_image_either(file).bind(ocr_and_cleanup)
