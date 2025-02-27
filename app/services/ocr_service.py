@@ -24,10 +24,6 @@ def process_image(file) -> Either:
     def ocr_and_cleanup(image_path: str) -> Either:
         ocr_result = perform_ocr_either(image_path)
         cleanup_file_either(image_path)
+        return ocr_result
         
-        if ocr_result.is_right():
-            return ocr_result
-        else :
-            return Left(f"Error performing OCR: {ocr_result.value}")
-
     return save_image_either(file).bind(ocr_and_cleanup)

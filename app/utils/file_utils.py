@@ -15,7 +15,7 @@ def save_image_either(file, upload_folder='./uploads') -> Either:
     except Exception as e:
         return Left(f"Error saving file: {str(e)}")
 
-def cleanup_file_either(filepath: str):
+def cleanup_file_either(filepath: str) -> Either:
     """
     Delete the temporary file, returning an Either.
     """
